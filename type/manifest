@@ -42,3 +42,14 @@ for p in $packages
 done
 
 __hostname --name $hostname
+
+__ufw --logging medium \
+    --default_outgoing allow \
+    --default_routed deny \
+    --default_incoming reject
+
+ports="80/tcp 443/tcp 10000/udp 22/tcp 3478/udp 5349/tcp"
+
+for port in $ports
+    do require="__ufw" __ufw_rule "$port"
+done
