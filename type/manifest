@@ -21,6 +21,7 @@
 
 os=$(cat "$__global/explorer/os")
 packages="gnupg2 nginx-full apt-transport-https openjdk-8-jdk"
+hostname="$(cat "$__object/parameter/hostname")"
 
 case "$os" in
     ubuntu)
@@ -39,3 +40,5 @@ __apt_update_index
 for p in $packages
    do require="__apt_update_index" __package  $p --state present
 done
+
+__hostname --name $hostname
