@@ -1,29 +1,35 @@
-cdist-typejitsi(7)
+cdist-type__jitsi(7)
 ==================
 
 NAME
 ----
-cdist-typejitsi - TODO
+cdist-type__jitsi - install jitsi-meet
 
 
 DESCRIPTION
 -----------
-This space intentionally left blank.
-
+Setup a jitsi-meet instance on a ubuntu machine.
 
 REQUIRED PARAMETERS
 -------------------
-None.
+
+hostname
+    The servers hostname.
+
+ip
+    The public ip which later will server the jitsi web interface.
 
 
 OPTIONAL PARAMETERS
 -------------------
-None.
 
+domain
+    If you want your server to have a FQDN, provide a domain.
+    The FQDN is then concatenate ``hostname.domain``
 
-BOOLEAN PARAMETERS
-------------------
-None.
+adminmail
+    If you provide a mail address, the jitsi script for letsencrypt
+    certifcate generation will be called with this mail address.
 
 
 EXAMPLES
@@ -31,14 +37,18 @@ EXAMPLES
 
 .. code-block:: sh
 
-    # TODO
-    jitsi
+    __jitsi --hostname jitsi-meet \
+        --ip xxx.xxx.xxx.xxx \
+        --domain example.com \
+        --adminmail admin@example.com
 
 
 SEE ALSO
 --------
-:strong:`TODO`\ (7)
+:strong: https://jitsi.github.io/handbook/docs/devops-guide/devops-guide-quickstart#add-the-jitsi-package-repository
 
+You might want to secure your jitsi instance:
+:strong: https://jitsi.github.io/handbook/docs/devops-guide/secure-domain
 
 AUTHORS
 -------
