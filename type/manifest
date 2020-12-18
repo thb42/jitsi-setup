@@ -23,6 +23,14 @@ os=$(cat "$__global/explorer/os")
 packages="gnupg2 nginx-full apt-transport-https openjdk-8-jdk"
 hostname="$(cat "$__object/parameter/hostname")"
 
+domain=""
+if [ -f "$__object/parameter/domain" ]; then
+    domain="$(cat "$__object/parameter/domain")"
+fi
+fqdn=$hostname.$domain
+
+ip="$(cat "$__object/parameter/ip")"
+
 case "$os" in
     ubuntu)
             __apt_ppa universe --state present
@@ -54,6 +62,8 @@ __apt_source jitsi-stable \
     --state present
 
 __hostname --name $hostname
+
+__hosts $fqdn --ip $ip --alias $hostname
 
 __ufw --logging medium \
     --default_outgoing allow \
