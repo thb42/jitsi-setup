@@ -75,3 +75,16 @@ ports="80/tcp 443/tcp 10000/udp 22/tcp 3478/udp 5349/tcp"
 for port in $ports
     do require="__ufw" __ufw_rule "$port"
 done
+
+require="__hosts/$fqdn" \
+__debconf_set_selections jitsi-meet-prosody --file - << eof
+jitsi-meet-prosody jitsi-meet-prosody/jvb-hostname string $fqdn
+eof
+
+require="__hosts/$fqdn" \
+__debconf_set_selections jitsi-videobridge --file - << eof
+jitsi-videobridge jitsi-videobridge/jvb-hostname string $fqdn
+eof
+
+require="__apt_source/jitsi-stable __hostname __hosts/$fqdn __debconf_set_selections/jitsi-meet-prosody __debconf_set_selections/jitsi-videobridge" \
+__package jitsi-meet --state present
