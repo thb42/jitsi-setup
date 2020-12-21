@@ -1,0 +1,91 @@
+#!/bin/sh -e
+#
+# 2020 toto (toto@toto.one)
+#
+# This file is part of cdist.
+#
+# cdist is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# cdist is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with cdist. If not, see <http://www.gnu.org/licenses/>.
+#
+
+
+os=$(cat "$__global/explorer/os")
+packages="gnupg2 nginx-full apt-transport-https openjdk-8-jdk"
+hostname="$(cat "$__object/parameter/hostname")"
+
+domain=""
+if [ -f "$__object/parameter/domain" ]; then
+    domain="$(cat "$__object/parameter/domain")"
+fi
+fqdn=$hostname.$domain
+fqdn=${fqdn%.}
+
+ip="$(cat "$__object/parameter/ip")"
+
+case "$os" in
+    ubuntu)
+            __apt_ppa universe --state present
+        :
+    ;;
+   *)
+      printf "Your operating system (%s) is currently not supported by this type (%s)\n" "$os" "${__type##*/}" >&2
+      printf "Please contribute an implementation for it if you can.\n" >&2
+      exit 1
+   ;;
+esac
+
+__apt_update_index
+
+for p in $packages
+   do require="__apt_update_index" __package  $p --state present
+done
+
+
+__apt_key_uri jitsi-keyring \
+    --uri "https://download.jitsi.org/jitsi-key.gpg.key" \
+    --state present
+
+require="__apt_key_uri/jitsi-keyring" \
+__apt_source jitsi-stable \
+    --uri https://download.jitsi.org \
+    --arch "[signed-by=/usr/share/keyrings/jitsi-keyring.gpg]"\
+    --distribution "stable/" \
+    --state present
+
+__hostname --name $hostname
+
+__hosts $fqdn --ip $ip --alias $hostname
+
+__ufw --logging medium \
+    --default_outgoing allow \
+    --default_routed deny \
+    --default_incoming reject
+
+ports="80/tcp 443/tcp 10000/udp 22/tcp 3478/udp 5349/tcp"
+
+for port in $ports
+    do require="__ufw" __ufw_rule "$port"
+done
+
+require="__hosts/$fqdn" \
+__debconf_set_selections jitsi-meet-prosody --file - << eof
+jitsi-meet-prosody jitsi-meet-prosody/jvb-hostname string $fqdn
+eof
+
+require="__hosts/$fqdn" \
+__debconf_set_selections jitsi-videobridge --file - << eof
+jitsi-videobridge jitsi-videobridge/jvb-hostname string $fqdn
+eof
+
+require="__apt_source/jitsi-stable __hostname __hosts/$fqdn __debconf_set_selections/jitsi-meet-prosody __debconf_set_selections/jitsi-videobridge" \
+__package jitsi-meet --state present
