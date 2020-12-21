@@ -19,5 +19,5 @@
 #
 
 if [ -f "$__object/parameter/adminmail" ]; then
-    echo "echo $(cat "$__object/parameter/adminmail") | /usr/share/jitsi-meet/scripts/install-letsencrypt.sh"
+    echo "echo $(cat "$__object/parameter/adminmail") | /usr/share/jitsi-meet/scripts/install-letsencrypt-cert.sh"
 fi
