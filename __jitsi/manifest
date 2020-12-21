@@ -28,6 +28,7 @@ if [ -f "$__object/parameter/domain" ]; then
     domain="$(cat "$__object/parameter/domain")"
 fi
 fqdn=$hostname.$domain
+fqdn=${fqdn%.}
 
 ip="$(cat "$__object/parameter/ip")"
 
